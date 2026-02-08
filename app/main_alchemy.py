@@ -5,6 +5,8 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi.security.utils import get_authorization_scheme_param
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from .database import connect_to_db, get_db
 from starlette.middleware.base import BaseHTTPMiddleware
 from .schemas import PlayerResponse, TeamResponse,LeagueResponse
@@ -17,6 +19,9 @@ from .models import User,SessionModel
 import asyncio
 
 app = FastAPI()
+
+
+security = HTTPBearer()
 
 MAX_CONCURRENT = 500
 semaphore = asyncio.Semaphore(MAX_CONCURRENT)
