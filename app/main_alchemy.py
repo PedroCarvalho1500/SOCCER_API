@@ -18,12 +18,13 @@ from jose import jwt, JWTError
 from .models import User,SessionModel
 import asyncio
 
+
 app = FastAPI()
 
 
 security = HTTPBearer()
 
-MAX_CONCURRENT = 500
+MAX_CONCURRENT = 10
 semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
 #@app.middleware("http")

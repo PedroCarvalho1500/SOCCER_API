@@ -2,10 +2,14 @@ from typing import Optional
 from fastapi import APIRouter, Form, Response, UploadFile, status, HTTPException, Depends
 from fastapi.params import File
 from sqlalchemy.orm import Session
+from httpx import AsyncClient
+from fastapi import BackgroundTasks, FastAPI
 from .. import models
 from ..database import get_db,get_players_from_db
 from ..schemas import PlayerResponse
 from ..oauth2 import get_current_user
+import asyncio
+from collections import deque
 #from ..oauth2 import get_current_user
 
 router = APIRouter(
@@ -14,29 +18,45 @@ router = APIRouter(
 
 
 
-
-
 @router.get("/players", status_code=status.HTTP_200_OK, response_model=list[PlayerResponse])
-def get_players(db: Session = Depends(get_db),limit: int = 10, skip: int = 0, starts_by: Optional[str] = "", order_by: Optional[str] = "id",current_user: int = Depends(get_current_user)):
+async def get_players(db: Session = Depends(get_db),current_user: int = Depends(get_current_user),limit: int = 20, skip: int = 0, starts_by: Optional[str] = "", order_by: Optional[str] = "id"):
+    async with AsyncClient() as client:
+        try:
+            players = await asyncio.to_thread(lambda: db.query(models.Player).filter(models.Player.name.like(f"{starts_by}%")).order_by(getattr(models.Player, order_by)).offset(skip).limit(limit).all())
 
-    try:
-        #get players through SQL
-        #players = get_players_from_db(db.bind.raw_connection(), limit=limit, skip=skip)
-        #get players through ORM
-        players = db.query(models.Player).filter(models.Player.name.like(f"{starts_by}%")).order_by(getattr(models.Player, order_by)).offset(skip).limit(limit).all()
-        #print(f"Verbs: {verbs}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Error fetching Players: {e} \n Check your query parameters"
-        )
-    if not players:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No Players found"
-        )
-    
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Error fetching Players: {e} \n Check your query parameters"
+            )
+        if not players:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No Players found"
+            )
     return players
+
+# @router.get("/players", status_code=status.HTTP_200_OK, response_model=list[PlayerResponse])
+# def get_players(db: Session = Depends(get_db),limit: int = 10, skip: int = 0, starts_by: Optional[str] = "", order_by: Optional[str] = "id",current_user: int = Depends(get_current_user)):
+
+#     try:
+#         #get players through SQL
+#         #players = get_players_from_db(db.bind.raw_connection(), limit=limit, skip=skip)
+#         #get players through ORM
+#         players = db.query(models.Player).filter(models.Player.name.like(f"{starts_by}%")).order_by(getattr(models.Player, order_by)).offset(skip).limit(limit).all()
+#         #print(f"Verbs: {verbs}")
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail=f"Error fetching Players: {e} \n Check your query parameters"
+#         )
+#     if not players:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="No Players found"
+#         )
+    
+#     return players
 
 
 @router.get("/players/{player_id}", status_code=status.HTTP_200_OK, response_model=PlayerResponse)

@@ -41,13 +41,14 @@ router = APIRouter(
 #         return leagues
 
  
-
-
 @router.get("/leagues", status_code=status.HTTP_200_OK,response_model=list[LeagueResponse])
-async def get_leagues(db: Session = Depends(get_db),current_user: int = Depends(get_current_user),limit: int = 20, skip: int = 0, starts_by: Optional[str] = "", order_by: Optional[str] = "id", background_tasks: BackgroundTasks = None):
+def get_leagues(db: Session = Depends(get_db),current_user: int = Depends(get_current_user),limit: int = 20, skip: int = 0, starts_by: Optional[str] = "",l_country: Optional[str] = "", order_by: Optional[str] = "id", background_tasks: BackgroundTasks = None):
 
     try:
-        leagues = db.query(models.League).filter(models.League.name.like(f"{starts_by}%")).order_by(getattr(models.League, order_by)).offset(skip).limit(limit).all()
+        leagues = db.query(models.League).filter(
+            models.League.name.like(f"{starts_by}%"),
+            models.League.country.like(f"%{l_country}%")
+        ).order_by(getattr(models.League, order_by)).offset(skip).limit(limit).all()
         
         #print(f"Verbs: {verbs}")
     except Exception as e:
@@ -62,6 +63,32 @@ async def get_leagues(db: Session = Depends(get_db),current_user: int = Depends(
         )
     
     return leagues
+
+
+
+
+# @router.get("/leagues", status_code=status.HTTP_200_OK,response_model=list[LeagueResponse])
+# async def get_leagues(db: Session = Depends(get_db),current_user: int = Depends(get_current_user),limit: int = 20, skip: int = 0, starts_by: Optional[str] = "",l_country: Optional[str] = "", order_by: Optional[str] = "id", background_tasks: BackgroundTasks = None):
+
+#     try:
+#         leagues = db.query(models.League).filter(
+#             models.League.name.like(f"{starts_by}%"),
+#             models.League.country.like(f"%{l_country}%")
+#         ).order_by(getattr(models.League, order_by)).offset(skip).limit(limit).all()
+        
+#         #print(f"Verbs: {verbs}")
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail=f"Error fetching Leagues: {e} \n Check your query parameters"
+#         )
+#     if not leagues:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="No Leagues found"
+#         )
+    
+#     return leagues
 
 
 

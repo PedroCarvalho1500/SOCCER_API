@@ -7,11 +7,33 @@ from ..database import get_db
 from ..schemas import TeamResponse
 from ..oauth2 import get_current_user
 #from ..oauth2 import get_current_user
+import asyncio
+from httpx import AsyncClient
 
 router = APIRouter(
     tags=["Teams"]
 )
 
+request_queue = asyncio.Queue()
+
+
+# @router.get("/teams", status_code=status.HTTP_200_OK, response_model=list[TeamResponse])
+# async def get_players(db: Session = Depends(get_db),current_user: int = Depends(get_current_user),limit: int = 20, skip: int = 0, starts_by: Optional[str] = "", order_by: Optional[str] = "id"):
+#     async with AsyncClient() as client:
+#         try:
+#             teams = await asyncio.to_thread(lambda: db.query(models.Team).filter(models.Team.name.like(f"{starts_by}%")).order_by(getattr(models.Team, order_by)).offset(skip).limit(limit).all())
+
+#         except Exception as e:
+#             raise HTTPException(
+#                 status_code=status.HTTP_401_UNAUTHORIZED,
+#                 detail=f"Error fetching teams: {e} \n Check your query parameters"
+#             )
+#         if not teams:
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail="No teams found"
+#             )
+#     return teams
 
 
 @router.get("/teams", status_code=status.HTTP_200_OK, response_model=list[TeamResponse])
