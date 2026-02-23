@@ -124,7 +124,7 @@ async def create_league(
 
 
 @router.get("/leagues/{league_id}", status_code=status.HTTP_200_OK, response_model=LeagueResponse)
-def get_player(league_id: int, db: Session = Depends(get_db),current_user: int = Depends(get_current_user)):
+def get_league(league_id: int, db: Session = Depends(get_db),current_user: int = Depends(get_current_user)):
     league = db.query(models.League).filter(models.League.id == league_id).first()
     if not league:
         raise HTTPException(status_code=404, detail="League not found")

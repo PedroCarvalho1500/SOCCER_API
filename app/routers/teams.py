@@ -58,7 +58,7 @@ def get_teams(db: Session = Depends(get_db),current_user: int = Depends(get_curr
 
 
 @router.get("/teams/{team_id}", status_code=status.HTTP_200_OK, response_model=TeamResponse)
-def get_player(team_id: int, db: Session = Depends(get_db),current_user: int = Depends(get_current_user)):
+def get_team(team_id: int, db: Session = Depends(get_db),current_user: int = Depends(get_current_user)):
     team = db.query(models.Team).filter(models.Team.id == team_id).first()
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
