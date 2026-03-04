@@ -27,25 +27,22 @@ security = HTTPBearer()
 MAX_CONCURRENT = 10
 semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
-#@app.middleware("http")
-#async def limit_concurrency(request: Request, call_next):
-#    async with semaphore:
-#        return await call_next(request)
 
-#limiter = CapacityLimiter(20)
-#include routers
 app.include_router(leagues.router)
 app.include_router(teams.router)
 app.include_router(players.router)
 app.include_router(users.router)
 app.include_router(auth.router)
+
+
+
 # Define role-based access control (RBAC) structure
 RESOURCES_FOR_ROLES = {
     "admin": {
-        "users": ["read", "write", "delete"],
-        "leagues": ["read", "write", "delete"],
-        "players": ["read", "write", "delete"],
-        "teams": ["read", "write", "delete"]
+        "users": ["read", "write", "delete", "update"],
+        "leagues": ["read", "write", "delete", "update"],
+        "players": ["read", "write", "delete", "update"],
+        "teams": ["read", "write", "delete", "update"]
     },
     "user": {
         "leagues": ["read"],
@@ -61,8 +58,6 @@ RESOURCES_FOR_ROLES = {
 
 
 
-
-#bind sqlalchmy models
 
 
 
@@ -86,19 +81,14 @@ def translate_method_to_action(method: str) -> str:
 
 def has_permission(user_role, resource_name, required_permission):
     resource_name = resource_name.split("/")[0]
-    #print(f"{resource_name}")
-    #print(f"{resource_name in RESOURCES_FOR_ROLES[user_role]}")
     if user_role in RESOURCES_FOR_ROLES and resource_name in RESOURCES_FOR_ROLES[user_role]:
         return required_permission in RESOURCES_FOR_ROLES[user_role][resource_name]
     return False
 
 
 def get_user_from_token(token: str, db: Session):
-    #print("Getting user from token")
     try:
-        #print(f"Token: {token}")
-        #print(db.query(SessionModel).all())
-        #time.sleep(3000)
+
         user_id_from_session = db.query(SessionModel).filter(SessionModel.session_token == token).first()
         if user_id_from_session:
             user_id = user_id_from_session.user_id
@@ -117,7 +107,6 @@ def get_user_from_token(token: str, db: Session):
         return HTTPException(status_code=401, detail="User not found")
     return user
 
-#Add post users to the EXLUDED_PATHS list
 PUBLIC_URIS = ["/login", "/users", "/users/", "users"]
 EXLUDED_PATHS = ["redoc","docs", "openapi.json", "login", "obtain_cur_user","","/users", "/users/"]
 

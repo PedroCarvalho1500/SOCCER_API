@@ -2,7 +2,6 @@ from .database import Base
 from sqlalchemy import Column, Integer, LargeBinary, String, ForeignKey
 from sqlalchemy.orm import relationship
 
-# Define relationships
 from sqlalchemy.sql.expression import text
 import time
 from pydantic import field_validator
@@ -25,7 +24,6 @@ class League(Base):
     name = Column(String, index=True, unique=True, nullable=False)  # Added unique constraint
     country = Column(String, index=True, nullable=False)
     
-    # Define relationship to Team
     teams = relationship("Team", back_populates="league_relation")
     updated = Column(String, index=True, nullable=False, server_default=time.strftime("%Y-%m-%d %H:%M:%S"))
     created = Column(String, index=True, nullable=False, server_default=time.strftime("%Y-%m-%d %H:%M:%S"))
@@ -57,7 +55,7 @@ class User(Base):
     role = Column(String, default="free", nullable=False)
     created_at = Column(String, index=True, nullable=False, server_default=time.strftime("%Y-%m-%d %H:%M:%S"))
 
-    #Validate role field
+
     @field_validator('role')
     @classmethod
     def validate_role(cls, v):
